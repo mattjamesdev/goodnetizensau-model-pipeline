@@ -6,8 +6,8 @@ from app.model_pipeline import predict_pipeline
 app = FastAPI()
 
 
-# class TextIn(BaseModel):
-#     text: str
+class TextIn(BaseModel):
+    input_text: str
 
 
 class PredictionOut(BaseModel):
@@ -24,9 +24,10 @@ def index():
     }
 
 
-@app.post("/classify-text/{payload}", response_model=PredictionOut)
-def classify_text(payload: str):
-    prediction, harsh_words, probabilities = predict_pipeline(payload)
+@app.post("/classify-text", response_model=PredictionOut)
+def classify_text(payload: TextIn):
+    text = payload.input_text
+    prediction, harsh_words, probabilities = predict_pipeline(text)
     prediction = int(prediction)
     probabilities = [float(val) for val in probabilities]
 
