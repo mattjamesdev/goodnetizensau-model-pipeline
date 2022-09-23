@@ -24,7 +24,7 @@ def index():
     }
 
 
-@app.post("/classify-text/{text}", response_model=PredictionOut)
+@app.post("/classify-text/{payload}", response_model=PredictionOut)
 def classify_text(payload: str):
     prediction, harsh_words, probabilities = predict_pipeline(payload)
     prediction = int(prediction)
