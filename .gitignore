@@ -1,0 +1,11 @@
+# Python virtual environment
+venv
+
+# Pycache files
+__pycache__
+
+# Model weights
+app/models
+
+# Misc
+.DS_Store
