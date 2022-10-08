@@ -33,7 +33,7 @@ nn_model = build_nn_model(encoder)
 
 
 # Get harsh words using coeffs of the TF/IDF
-def get_harsh_words(docs_val, count_vect):
+def get_harsh_words(docs_val, count_vect) -> list[str]:
     """
     Get the harsh words from the TF/IDF model.
 
@@ -59,7 +59,7 @@ def get_harsh_words(docs_val, count_vect):
     return harsh_words_list
 
 
-def predict_pipeline(input_text: str) -> tuple:
+def predict_pipeline(input_text: str) -> tuple[int, list[str], list[float]]:
     """
     Takes in a dict (JSON object) of inputs and returns the response (as an HTTP
     response).
