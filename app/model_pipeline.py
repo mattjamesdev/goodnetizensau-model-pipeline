@@ -97,6 +97,44 @@ def predict_pipeline(input_text: str) -> tuple[int, list[str], list[float]]:
     return prediction, harsh_words, probabilities
 
 
+def analyse_comments(comments: list[str]) -> tuple[float, list[float]]:
+    """
+    Takes in a list of comments and analyses them using our model.
+
+    Parameters
+    ----------
+    comments : list[str]
+        A list of comments to analyse.
+
+    Returns
+    -------
+    tuple[fraction_toxic: float, class_probabilities: list[float]]
+        A tuple comprising the fraction of comments predicted to be toxic, and a list
+        of the average probabilities of classes for the comments.
+
+    """
+    # Make predictions on each comment and get a ratio of toxic comments
+    n_comments = len(comments)
+    n_toxic = 0
+    class_probabilities_sums = [0.0, 0.0, 0.0]
+    for comment in comments:
+        # Use our model to get toxicity prediction and class probabilities
+        # (toxic, aggressive, attacking)
+        prediction, _, probabilities = predict_pipeline(comment)
+        # If toxic, update n_toxic and class_probabilities_sums
+        if prediction == 1:
+            n_toxic += 1
+            # Perform element-wise addition to update the class counts
+            class_probabilities_sums = [
+                sum(x) for x in zip(class_probabilities_sums, probabilities)
+            ]
+    # Calculate the fractions of toxicity and the other classes
+    fraction_toxic = round(n_toxic / n_comments, 2)
+    class_probabilities = [round(x / max(n_toxic, 1), 2) for x in class_probabilities_sums]
+
+    return fraction_toxic, class_probabilities
+
+
 if __name__ == "__main__":
 
     print(BASE_DIR)
