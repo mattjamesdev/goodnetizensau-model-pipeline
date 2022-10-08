@@ -7,8 +7,8 @@ from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
 
-from app.rnn import get_encoder, build_rnn_model
-# from rnn import get_encoder, build_rnn_model
+from app.nn import get_encoder, build_nn_model
+# from nn import get_encoder, build_nn_model
 
 
 # Silence scikit-learn UserWarnings
@@ -29,7 +29,7 @@ tfidf: TfidfTransformer = jl.load(f"{BASE_DIR}/models/logistic/tdidf.joblib")
 
 # Create the encoder and the RNN model
 encoder = get_encoder(VOCAB_SIZE)
-rnn_model = build_rnn_model(encoder)
+nn_model = build_nn_model(encoder)
 
 
 # Get harsh words using coeffs of the TF/IDF
@@ -88,7 +88,7 @@ def predict_pipeline(input_text: str) -> tuple:
     # the RNN
     if prediction == 1:
         harsh_words = get_harsh_words(transformed_text, count)
-        probabilities_numpy = rnn_model.predict([input_text]).tolist()[0]
+        probabilities_numpy = nn_model.predict([input_text]).tolist()[0]
         probabilities = [round(100 * float(num), 1) for num in probabilities_numpy]
     else:
         harsh_words = []
