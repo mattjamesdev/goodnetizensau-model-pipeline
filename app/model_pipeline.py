@@ -7,8 +7,8 @@ from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
 
-from app.rnn import get_encoder, build_rnn_model
-# from rnn import get_encoder, build_rnn_model
+from app.nn import get_encoder, build_nn_model
+# from nn import get_encoder, build_nn_model
 
 
 # Silence scikit-learn UserWarnings
@@ -29,11 +29,11 @@ tfidf: TfidfTransformer = jl.load(f"{BASE_DIR}/models/logistic/tdidf.joblib")
 
 # Create the encoder and the RNN model
 encoder = get_encoder(VOCAB_SIZE)
-rnn_model = build_rnn_model(encoder)
+nn_model = build_nn_model(encoder)
 
 
 # Get harsh words using coeffs of the TF/IDF
-def get_harsh_words(docs_val, count_vect):
+def get_harsh_words(docs_val, count_vect) -> list[str]:
     """
     Get the harsh words from the TF/IDF model.
 
@@ -59,7 +59,7 @@ def get_harsh_words(docs_val, count_vect):
     return harsh_words_list
 
 
-def predict_pipeline(input_text: str) -> tuple:
+def predict_pipeline(input_text: str) -> tuple[int, list[str], list[float]]:
     """
     Takes in a dict (JSON object) of inputs and returns the response (as an HTTP
     response).
@@ -88,13 +88,51 @@ def predict_pipeline(input_text: str) -> tuple:
     # the RNN
     if prediction == 1:
         harsh_words = get_harsh_words(transformed_text, count)
-        probabilities_numpy = rnn_model.predict([input_text]).tolist()[0]
+        probabilities_numpy = nn_model.predict([input_text]).tolist()[0]
         probabilities = [round(100 * float(num), 1) for num in probabilities_numpy]
     else:
         harsh_words = []
         probabilities = []
 
     return prediction, harsh_words, probabilities
+
+
+def analyse_comments(comments: list[str]) -> tuple[float, list[float]]:
+    """
+    Takes in a list of comments and analyses them using our model.
+
+    Parameters
+    ----------
+    comments : list[str]
+        A list of comments to analyse.
+
+    Returns
+    -------
+    tuple[fraction_toxic: float, class_probabilities: list[float]]
+        A tuple comprising the fraction of comments predicted to be toxic, and a list
+        of the average probabilities of classes for the comments.
+
+    """
+    # Make predictions on each comment and get a ratio of toxic comments
+    n_comments = len(comments)
+    n_toxic = 0
+    class_probabilities_sums = [0.0, 0.0, 0.0]
+    for comment in comments:
+        # Use our model to get toxicity prediction and class probabilities
+        # (toxic, aggressive, attacking)
+        prediction, _, probabilities = predict_pipeline(comment)
+        # If toxic, update n_toxic and class_probabilities_sums
+        if prediction == 1:
+            n_toxic += 1
+            # Perform element-wise addition to update the class counts
+            class_probabilities_sums = [
+                sum(x) for x in zip(class_probabilities_sums, probabilities)
+            ]
+    # Calculate the fractions of toxicity and the other classes
+    fraction_toxic = round(n_toxic / n_comments, 2)
+    class_probabilities = [round(x / max(n_toxic, 1), 2) for x in class_probabilities_sums]
+
+    return fraction_toxic, class_probabilities
 
 
 if __name__ == "__main__":
