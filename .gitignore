@@ -1,8 +1,9 @@
 # Python virtual environment
 venv
 
-# Pycache files
+# Cache files
 __pycache__
+.pytest_cache
 
 # Model weights
 app/models
