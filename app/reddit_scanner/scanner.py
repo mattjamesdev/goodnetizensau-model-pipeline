@@ -8,9 +8,6 @@ API_KEY = os.environ["REDDIT_API_KEY"]
 USER_AGENT = os.environ["REDDIT_USER_AGENT"]
 
 
-reddit = praw.Reddit(client_id=APP_ID, client_secret=API_KEY, user_agent=USER_AGENT)
-
-
 def fetch_comments(
     reddit: praw.Reddit, sub_name: str, comment_limit: int, post_limit: int
 ) -> list[str]:
@@ -35,6 +32,7 @@ def fetch_comments(
 
     # Loop through the top post_limit posts in the subreddit, by "hot"
     for submission in subreddit.hot(limit=post_limit):
+        submission.comment_sort = "controversial"
         for comment in submission.comments:
             comment_list.append(comment.body)
             n_comments += 1
@@ -45,6 +43,8 @@ def fetch_comments(
 
 
 if __name__ == "__main__":
+
+    reddit = praw.Reddit(client_id=APP_ID, client_secret=API_KEY, user_agent=USER_AGENT)
 
     comments = fetch_comments(reddit, "machinelearning", 5, 3)
 
