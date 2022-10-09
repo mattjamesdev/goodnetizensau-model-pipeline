@@ -1,6 +1,9 @@
+import logging
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from praw import Reddit
@@ -47,6 +50,18 @@ def index():
     return {
         "msg": "You've found the index! Head to <url>/docs for documentation.",
     }
+
+
+# For logging more details in case of a 422 error
+# https://github.com/tiangolo/fastapi/issues/3361#issuecomment-1002120988
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
+    logging.error(f"{request}: {exc_str}")
+    content = {"status_code": 10422, "message": exc_str, "data": None}
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 @app.post("/classify-text", response_model=TextPredictionOut)
