@@ -45,7 +45,6 @@ class SubredditPredictionOut(BaseModel):
 @app.get("/")
 def index():
     return {
-        "statusCode": 200,
         "msg": "You've found the index! Head to <url>/docs for documentation.",
     }
 
@@ -58,7 +57,6 @@ def classify_text(payload: TextIn):
     probabilities = [float(val) for val in probabilities]
 
     return {
-        "statusCode": 200,
         "bullying": prediction,
         "words": harsh_words,
         "probs": probabilities,
