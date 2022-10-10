@@ -5,9 +5,9 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from praw import Reddit
 
+from app.schemas import TextIn, TextPredictionOut, SubredditPredictionOut
 from app.model_pipeline import predict_pipeline, analyse_comments
 from app.reddit_scanner.scanner import fetch_comments
 
@@ -28,21 +28,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-class TextIn(BaseModel):
-    input_text: str
-
-
-class TextPredictionOut(BaseModel):
-    bullying: int
-    words: list[str]
-    probs: list[float]
-
-
-class SubredditPredictionOut(BaseModel):
-    toxicity: float
-    probs: list[float]
 
 
 @app.get("/")
