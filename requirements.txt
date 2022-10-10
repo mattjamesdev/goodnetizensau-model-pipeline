@@ -1,6 +1,9 @@
 # Reddit API wrapper
 praw
 
+# Twitter API wrapper
+tweepy
+
 # API
 fastapi
 pydantic

@@ -1,21 +1,29 @@
 import logging
 import os
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from praw import Reddit
+from tweepy import Client
 
-from app.schemas import TextIn, TextPredictionOut, SubredditPredictionOut
+from app.schemas import (
+    TextIn,
+    TextPredictionOut,
+    SubredditPredictionOut,
+    TwitterUserPredictionOut,
+)
 from app.model_pipeline import predict_pipeline, analyse_comments
 from app.social_analysers.subreddit_analyser import fetch_subreddit_comments
+from app.social_analysers.twitter_analyser import fetch_twitter_user_comments
 
 
 APP_ID = os.environ["REDDIT_APP_ID"]
 API_KEY = os.environ["REDDIT_API_KEY"]
 USER_AGENT = os.environ["REDDIT_USER_AGENT"]
 
+TWITTER_BEARER_TOKEN = os.environ["TWITTER_BEARER_TOKEN"]
 
 app = FastAPI()
 
@@ -82,3 +90,28 @@ def analyse_subreddit(payload: TextIn):
     fraction_toxic, class_probabilities = analyse_comments(comments)
 
     return {"toxicity": fraction_toxic, "probs": class_probabilities}
+
+
+@app.post("/analyse-twitter-user", response_model=TwitterUserPredictionOut)
+def analyse_twitter_user(payload: TextIn, response: Response):
+    user_handle = payload.input_text
+
+    client = Client(bearer_token=TWITTER_BEARER_TOKEN)
+
+    n_tweets = 100
+
+    tweets, status_string = fetch_twitter_user_comments(client, user_handle, n_tweets)
+    
+    # If the request yielded no results
+    if tweets is None: 
+        if status_string == "Invalid Twitter handle":
+            # Twitter handle is invalid - send 400 bad request
+            response.status_code = status.HTTP_400_BAD_REQUEST
+        elif status_string == "User does not exist":
+            # Twitter user does not exist - send 404 not found
+            response.status_code = status.HTTP_404_NOT_FOUND
+        return {"detail": status_string}
+    else:
+        fraction_toxic, class_probabilities = analyse_comments(tweets)
+
+        return {"toxicity": fraction_toxic, "probs": class_probabilities}
