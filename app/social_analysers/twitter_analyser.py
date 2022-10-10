@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 import tweepy
 
@@ -8,7 +9,7 @@ TWITTER_BEARER_TOKEN = os.environ["TWITTER_BEARER_TOKEN"]
 
 def fetch_twitter_user_comments(
     client: tweepy.Client, user: str, n_tweets: int
-) -> tuple[list[str] | None, str]:
+) -> tuple[Union[list[str], None], str]:
     """
     Fetch a number of tweets from a Twitter user. Can only fetch between 10 and 100
     tweets.
