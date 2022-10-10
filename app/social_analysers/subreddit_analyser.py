@@ -58,7 +58,3 @@ if __name__ == "__main__":
     comments = fetch_subreddit_comments(reddit, "machinelearning", 5, 3)
 
     print(comments)
-
-    with open("output.txt", "w") as f:
-        for comment in comments:
-            f.write(comment)

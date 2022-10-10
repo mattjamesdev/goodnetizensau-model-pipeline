@@ -133,19 +133,3 @@ def analyse_comments(comments: list[str]) -> tuple[float, list[float]]:
     class_probabilities = [round(x / max(n_toxic, 1), 2) for x in class_probabilities_sums]
 
     return fraction_toxic, class_probabilities
-
-
-if __name__ == "__main__":
-
-    print(BASE_DIR)
-
-    input_text = " ".join(sys.argv[1:])
-    print(input_text)
-
-    output = predict_pipeline(input_text)
-    print(output)
-    for thing in output:
-        print(type(thing))
-        if type(thing) == list:
-            for inner_thing in thing:
-                print(inner_thing)
