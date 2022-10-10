@@ -19,3 +19,7 @@ class SubredditPredictionOut(BaseModel):
 class TwitterUserPredictionOut(BaseModel):
     toxicity: float
     probs: list[float]
+
+
+class BadResponseOut(BaseModel):
+    detail: str

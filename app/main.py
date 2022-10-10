@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Union
 
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
@@ -13,6 +14,7 @@ from app.schemas import (
     TextPredictionOut,
     SubredditPredictionOut,
     TwitterUserPredictionOut,
+    BadResponseOut,
 )
 from app.model_pipeline import predict_pipeline, analyse_comments
 from app.social_analysers.subreddit_analyser import fetch_subreddit_comments
@@ -71,7 +73,9 @@ def classify_text(payload: TextIn):
     }
 
 
-@app.post("/analyse-subreddit", response_model=SubredditPredictionOut)
+@app.post(
+    "/analyse-subreddit", response_model=Union[SubredditPredictionOut, BadResponseOut]
+)
 def analyse_subreddit(payload: TextIn):
     subreddit_name = payload.input_text
 
@@ -92,7 +96,10 @@ def analyse_subreddit(payload: TextIn):
     return {"toxicity": fraction_toxic, "probs": class_probabilities}
 
 
-@app.post("/analyse-twitter-user", response_model=TwitterUserPredictionOut)
+@app.post(
+    "/analyse-twitter-user",
+    response_model=Union[TwitterUserPredictionOut, BadResponseOut],
+)
 def analyse_twitter_user(payload: TextIn, response: Response):
     user_handle = payload.input_text
 
@@ -101,9 +108,9 @@ def analyse_twitter_user(payload: TextIn, response: Response):
     n_tweets = 100
 
     tweets, status_string = fetch_twitter_user_comments(client, user_handle, n_tweets)
-    
+
     # If the request yielded no results
-    if tweets is None: 
+    if tweets is None:
         if status_string == "Invalid Twitter handle":
             # Twitter handle is invalid - send 400 bad request
             response.status_code = status.HTTP_400_BAD_REQUEST
