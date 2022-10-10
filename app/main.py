@@ -9,7 +9,7 @@ from praw import Reddit
 
 from app.schemas import TextIn, TextPredictionOut, SubredditPredictionOut
 from app.model_pipeline import predict_pipeline, analyse_comments
-from app.reddit_scanner.scanner import fetch_comments
+from app.social_analysers.subreddit_analyser import fetch_comments
 
 
 APP_ID = os.environ["REDDIT_APP_ID"]
