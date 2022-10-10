@@ -76,7 +76,7 @@ def classify_text(payload: TextIn):
 @app.post(
     "/analyse-subreddit", response_model=Union[SubredditPredictionOut, BadResponseOut]
 )
-def analyse_subreddit(payload: TextIn):
+def analyse_subreddit(payload: TextIn, response: Response):
     subreddit_name = payload.input_text
 
     reddit = Reddit(client_id=APP_ID, client_secret=API_KEY, user_agent=USER_AGENT)
@@ -85,9 +85,19 @@ def analyse_subreddit(payload: TextIn):
     post_limit = 5
 
     # Get comments from the subreddit
-    comments = fetch_subreddit_comments(
+    comments, status_string = fetch_subreddit_comments(
         reddit, subreddit_name, comment_limit=n_comments, post_limit=post_limit
     )
+
+    # If the request yielded no results
+    if comments is None:
+        if status_string == "Invalid subreddit name":
+            # Invalid subreddit name - send 400 bad request
+            response.status_code = status.HTTP_400_BAD_REQUEST
+        elif status_string == "Subreddit does not exist":
+            # Sub does not exist - send 404 not found
+            response.status_code = status.HTTP_404_NOT_FOUND
+        return {"detail": status_string}
 
     # Analyse the comments to get a toxicity fraction and a proportion of
     # probabilities for each category (toxic, aggressive, attacking)

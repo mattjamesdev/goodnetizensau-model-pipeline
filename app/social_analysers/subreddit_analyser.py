@@ -1,6 +1,8 @@
 import os
+from typing import Union
 
 import praw
+import prawcore
 
 
 APP_ID = os.environ["REDDIT_APP_ID"]
@@ -10,7 +12,7 @@ USER_AGENT = os.environ["REDDIT_USER_AGENT"]
 
 def fetch_subreddit_comments(
     reddit: praw.Reddit, sub_name: str, comment_limit: int, post_limit: int
-) -> list[str]:
+) -> tuple[Union[list[str], None], str]:
     """
     Fetches a set of comments from hot posts of the given subreddit. Only
     fetches top-level comments.
@@ -31,15 +33,22 @@ def fetch_subreddit_comments(
     n_comments: int = 0
 
     # Loop through the top post_limit posts in the subreddit, by "hot"
-    for submission in subreddit.hot(limit=post_limit):
-        submission.comment_sort = "controversial"
-        for comment in submission.comments:
-            comment_list.append(comment.body)
-            n_comments += 1
-            # If we reach our specified comment limit, return what we have
-            if n_comments >= comment_limit:
-                return comment_list
-    return comment_list
+    try:
+        for submission in subreddit.hot(limit=post_limit):
+            submission.comment_sort = "controversial"
+            for comment in submission.comments:
+                comment_list.append(comment.body)
+                n_comments += 1
+                # If we reach our specified comment limit, return what we have
+                if n_comments >= comment_limit:
+                    return comment_list, "Successfully retrieved comments"
+        return comment_list, "Successfully retrieved comments"
+    except prawcore.exceptions.Redirect:
+        # Subreddit does not exist
+        return None, "Subreddit does not exist"
+    except prawcore.exceptions.NotFound:
+        # Subreddit name is invalid
+        return None, "Invalid subreddit name"
 
 
 if __name__ == "__main__":
