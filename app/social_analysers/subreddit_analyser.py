@@ -8,7 +8,7 @@ API_KEY = os.environ["REDDIT_API_KEY"]
 USER_AGENT = os.environ["REDDIT_USER_AGENT"]
 
 
-def fetch_comments(
+def fetch_subreddit_comments(
     reddit: praw.Reddit, sub_name: str, comment_limit: int, post_limit: int
 ) -> list[str]:
     """
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     reddit = praw.Reddit(client_id=APP_ID, client_secret=API_KEY, user_agent=USER_AGENT)
 
-    comments = fetch_comments(reddit, "machinelearning", 5, 3)
+    comments = fetch_subreddit_comments(reddit, "machinelearning", 5, 3)
 
     print(comments)
 

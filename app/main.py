@@ -9,7 +9,7 @@ from praw import Reddit
 
 from app.schemas import TextIn, TextPredictionOut, SubredditPredictionOut
 from app.model_pipeline import predict_pipeline, analyse_comments
-from app.social_analysers.subreddit_analyser import fetch_comments
+from app.social_analysers.subreddit_analyser import fetch_subreddit_comments
 
 
 APP_ID = os.environ["REDDIT_APP_ID"]
@@ -73,7 +73,7 @@ def analyse_subreddit(payload: TextIn):
     post_limit = 5
 
     # Get comments from the subreddit
-    comments = fetch_comments(
+    comments = fetch_subreddit_comments(
         reddit, subreddit_name, comment_limit=n_comments, post_limit=post_limit
     )
 
