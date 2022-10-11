@@ -27,6 +27,10 @@ def fetch_subreddit_comments(
     - post_limit : int
         The maximum number of posts to search.
     """
+    # If the user include the "r/", remove it
+    if sub_name[:2] == "r/":
+        sub_name = sub_name[2:]
+
     subreddit = reddit.subreddit(sub_name)
 
     comment_list: list[str] = []

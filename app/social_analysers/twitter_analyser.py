@@ -29,6 +29,9 @@ def fetch_twitter_user_comments(
             texts; if unsuccessful, it will be None. The string will be a status
             message saying whether or not the request was successful, and if not, why.
     """
+    # If the user included the leading "@", remove it
+    if user[:1] == "@":
+        user = user[1:]
 
     # max_results must be between 10 and 100
     if not 10 <= n_tweets <= 100:
