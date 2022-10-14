@@ -130,6 +130,6 @@ def analyse_comments(comments: list[str]) -> tuple[float, list[float]]:
             ]
     # Calculate the fractions of toxicity and the other classes
     fraction_toxic = round(100 * n_toxic / n_comments, 2)
-    class_probabilities = [round(x / max(n_toxic, 1), 2) for x in class_probabilities_sums]
+    class_probabilities = [round(x / n_comments, 2) for x in class_probabilities_sums]
 
     return fraction_toxic, class_probabilities
